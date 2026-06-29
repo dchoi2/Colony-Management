@@ -20,17 +20,26 @@
     <dt>Location</dt><dd>{{ cage.location or "—" }}</dd>
     <dt>Status</dt><dd><span class="badge badge-{{ 'active' if cage.status == 'active' else 'other' }}">{{ cage.status }}</span></dd>
     {% if cage.notes %}<dt>Notes</dt><dd>{{ cage.notes }}</dd>{% endif %}
+    <dt>Ear-tag markers</dt>
+    <dd>
+      {% if cage.used_ear_tags %}Used: {{ cage.used_ear_tags | sort | join(', ') }}.{% else %}None yet.{% endif %}
+      {% if cage.next_ear_tag %}<strong>Next free: {{ cage.next_ear_tag }}</strong>{% else %}<span class="muted">All standard markers used.</span>{% endif %}
+    </dd>
   </dl>
 </div>
 
-<h2>Mice in this cage</h2>
+<div class="page-head">
+  <h2 style="margin:0;">Mice in this cage</h2>
+  <a class="btn btn-sm" href="{{ url_for('main.mouse_new', cage=cage.id) }}">+ Add mouse to this cage</a>
+</div>
 {% if cage.mice %}
 <table>
-  <thead><tr><th>Tag</th><th>Sex</th><th>Strain</th><th>Genotype</th><th>Status</th></tr></thead>
+  <thead><tr><th>Tag</th><th>Ear tag</th><th>Sex</th><th>Strain</th><th>Genotype</th><th>Status</th></tr></thead>
   <tbody>
     {% for m in cage.mice %}
     <tr>
       <td><a href="{{ url_for('main.mouse_detail', mouse_id=m.id) }}">{{ m.tag }}</a></td>
+      <td>{{ m.ear_tags or "—" }}</td>
       <td class="sex-{{ m.sex }}">{{ m.sex_display }}</td>
       <td>{{ m.strain or "—" }}</td>
       <td>{{ m.genotype or "—" }}</td>

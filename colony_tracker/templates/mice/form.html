@@ -22,7 +22,7 @@
       <select id="colony_id" name="colony_id" required>
         <option value="">— choose —</option>
         {% for c in colonies %}
-          <option value="{{ c.id }}" {{ 'selected' if mouse and mouse.colony_id == c.id }}>{{ c.name }}</option>
+          <option value="{{ c.id }}" {{ 'selected' if (mouse and mouse.colony_id == c.id) or (not mouse and prefill.get('colony_id') == c.id) }}>{{ c.name }}</option>
         {% endfor %}
       </select>
     </div>
@@ -31,7 +31,7 @@
       <select id="cage_id" name="cage_id">
         <option value="">— none —</option>
         {% for cg in cages %}
-          <option value="{{ cg.id }}" {{ 'selected' if mouse and mouse.cage_id == cg.id }}>{{ cg.label }}</option>
+          <option value="{{ cg.id }}" {{ 'selected' if (mouse and mouse.cage_id == cg.id) or (not mouse and prefill.get('cage_id') == cg.id) }}>{{ cg.label }}</option>
         {% endfor %}
       </select>
     </div>
@@ -106,8 +106,14 @@
 
   <div class="field-row">
     <div class="field">
-      <label for="ear_tags">Ear tags</label>
-      <input id="ear_tags" name="ear_tags" value="{{ mouse.ear_tags if mouse else '' }}" placeholder="e.g. rt / lt / both">
+      <label for="ear_tags">Ear tag (genotyping marker)</label>
+      <input id="ear_tags" name="ear_tags" list="ear_tag_list"
+             value="{{ mouse.ear_tags if mouse else prefill.get('ear_tags', '') }}"
+             placeholder="rt / lt / both / 2x rt / 2x lt">
+      <datalist id="ear_tag_list">
+        {% for opt in ear_tag_options %}<option value="{{ opt }}">{% endfor %}
+      </datalist>
+      <span class="hint muted" id="ear_tag_hint"></span>
     </div>
     <div class="field">
       <label for="breeder_pair">Breeder pair #</label>
@@ -141,4 +147,32 @@
     <a class="btn btn-light" href="{{ url_for('main.mouse_list') }}">Cancel</a>
   </div>
 </form>
+
+<script>
+  // Suggest the next free ear-tag marker for whichever cage is selected.
+  var nextTagByCage = {{ cage_next_tags | tojson }};
+  var cageSelect = document.getElementById("cage_id");
+  var earInput = document.getElementById("ear_tags");
+  var hint = document.getElementById("ear_tag_hint");
+
+  function updateEarTagHint() {
+    var next = nextTagByCage[cageSelect.value];
+    if (cageSelect.value && next) {
+      hint.textContent = "Next free marker in this cage: " + next;
+    } else if (cageSelect.value) {
+      hint.textContent = "All standard markers are used in this cage.";
+    } else {
+      hint.textContent = "";
+    }
+  }
+
+  cageSelect.addEventListener("change", function () {
+    var next = nextTagByCage[cageSelect.value];
+    // Auto-fill the suggestion only when the field is empty, so we never
+    // overwrite something already typed.
+    if (next && !earInput.value) earInput.value = next;
+    updateEarTagHint();
+  });
+  updateEarTagHint();
+</script>
 {% endblock %}

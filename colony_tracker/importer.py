@@ -19,7 +19,7 @@ from datetime import date, datetime
 from openpyxl import load_workbook
 
 from . import db
-from .models import Cage, Colony, Mouse
+from .models import Cage, Colony, Mouse, normalize_ear_tag
 
 # Map a normalized header -> the Mouse field it fills. Two sentinels are
 # handled specially: __cage__ (the cage label) and __generation__ (folded
@@ -181,7 +181,7 @@ def _parse_sheet(ws):
             "date_of_death": dod,
             "status": "dead" if dod else "alive",
             "genotype": _as_text(row.get("genotype")),
-            "ear_tags": _as_text(row.get("ear_tags")),
+            "ear_tags": normalize_ear_tag(_as_text(row.get("ear_tags"))),
             "breeder_pair": _as_text(row.get("breeder_pair")),
             "parent_pair": _as_text(row.get("parent_pair")),
             "use": _as_text(row.get("use")),
