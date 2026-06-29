@@ -13,6 +13,18 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+def _normalize_db_url(url):
+    """Make a hosting provider's database URL work with SQLAlchemy.
+
+    Some hosts (Render, Heroku) hand out URLs that start with
+    ``postgres://``, but SQLAlchemy expects ``postgresql://``. This fixes
+    that and returns None unchanged.
+    """
+    if url and url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    return url
+
+
 def create_app(database_uri=None):
     """Create and configure the Flask application.
 
@@ -23,10 +35,16 @@ def create_app(database_uri=None):
     app = Flask(__name__)
 
     # Where the SQLite database file lives (project root, one level up).
+    # This is the default for running on your own computer.
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     default_uri = "sqlite:///" + os.path.join(project_root, "colony.db")
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_uri or default_uri
+    # When hosted online, the host provides a shared database through the
+    # DATABASE_URL environment variable (e.g. PostgreSQL). If it is present we
+    # use that shared database so everyone sees the same live data.
+    env_uri = _normalize_db_url(os.environ.get("DATABASE_URL"))
+
+    app.config["SQLALCHEMY_DATABASE_URI"] = database_uri or env_uri or default_uri
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     # Used to keep flash messages secure; override via env var in production.
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-change-me")
