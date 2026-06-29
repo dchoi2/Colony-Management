@@ -13,7 +13,7 @@ services:
     name: colony-manager
     runtime: python
     plan: free          # free web service
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install -r requirements-hosting.txt
     startCommand: gunicorn run:app
     envVars:
       # Connects the web app to the shared database above.

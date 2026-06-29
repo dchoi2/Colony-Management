@@ -1,0 +1,5 @@
+# Extra packages needed ONLY when hosting the app online (not for running it
+# on your own computer). The Render Blueprint installs this file.
+-r requirements.txt
+gunicorn==22.0.0
+psycopg2-binary==2.9.9
