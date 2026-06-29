@@ -88,6 +88,13 @@ class Mouse(db.Model):
     sire_id = db.Column(db.Integer, db.ForeignKey("mouse.id"), nullable=True)
     dam_id = db.Column(db.Integer, db.ForeignKey("mouse.id"), nullable=True)
 
+    # Extra fields that mirror common lab colony spreadsheets (all optional).
+    ear_tags = db.Column(db.String(40), default="")      # e.g. rt / lt / both
+    breeder_pair = db.Column(db.String(60), default="")  # e.g. b24
+    parent_pair = db.Column(db.String(120), default="")  # e.g. wf/hm
+    use = db.Column(db.String(200), default="")          # e.g. used in FC behavior
+    link = db.Column(db.String(300), default="")         # related file or URL
+
     notes = db.Column(db.Text, default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -105,6 +112,12 @@ class Mouse(db.Model):
             return None
         end = self.date_of_death or date.today()
         return (end - self.dob).days
+
+    @property
+    def age_weeks(self):
+        """Whole weeks of age, matching the 'age' column in lab spreadsheets."""
+        days = self.age_days
+        return None if days is None else days // 7
 
     @property
     def age_display(self):

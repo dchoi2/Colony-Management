@@ -20,6 +20,15 @@ then everyone works through normal web pages in a browser.
 Plus a **dashboard** with live counts and **search/filter** for finding mice
 by tag, name, genotype, strain, colony, or status.
 
+### Export to Excel
+
+Click **⬇ Export to Excel** on the Mice page (or a colony's page) to download
+a nicely formatted `.xlsx` spreadsheet — styled header, frozen top row, filter
+dropdowns, auto-sized columns, real dates, and deceased animals flagged in red.
+Columns mirror a typical lab colony sheet: cage, number, sex, DOB, DOD, age,
+genotype, strain, ear tags, breeder pair, parent pair, use, link, status, and
+notes.
+
 ## Requirements
 
 - Python 3.9 or newer

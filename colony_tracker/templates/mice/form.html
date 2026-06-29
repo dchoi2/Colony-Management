@@ -104,6 +104,33 @@
     </div>
   </div>
 
+  <div class="field-row">
+    <div class="field">
+      <label for="ear_tags">Ear tags</label>
+      <input id="ear_tags" name="ear_tags" value="{{ mouse.ear_tags if mouse else '' }}" placeholder="e.g. rt / lt / both">
+    </div>
+    <div class="field">
+      <label for="breeder_pair">Breeder pair #</label>
+      <input id="breeder_pair" name="breeder_pair" value="{{ mouse.breeder_pair if mouse else '' }}" placeholder="e.g. b24">
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="parent_pair">Parent pair</label>
+      <input id="parent_pair" name="parent_pair" value="{{ mouse.parent_pair if mouse else '' }}" placeholder="e.g. wf/hm">
+    </div>
+    <div class="field">
+      <label for="use">Use</label>
+      <input id="use" name="use" value="{{ mouse.use if mouse else '' }}" placeholder="e.g. used in FC behavior">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="link">Link / related file</label>
+    <input id="link" name="link" value="{{ mouse.link if mouse else '' }}" placeholder="e.g. dysbindin Behavior - july 2024.xlsx">
+  </div>
+
   <div class="field">
     <label for="notes">Notes</label>
     <textarea id="notes" name="notes">{{ mouse.notes if mouse else '' }}</textarea>
