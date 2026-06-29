@@ -36,6 +36,18 @@ python seed_sample_data.py
 
 ## Running the app
 
+### Windows — easy way (no terminal)
+
+After installing once, just **double-click `Start Colony Manager.bat`**. A
+window opens (that's the app running) and your browser opens to the app
+automatically. To stop it, close that window. You can right-click the `.bat`
+file → **Send to → Desktop (create shortcut)** for one-click access.
+
+First time only: double-click **`Install - run once.bat`** to install the
+requirements.
+
+### Any system — terminal way
+
 ```bash
 python run.py
 ```
