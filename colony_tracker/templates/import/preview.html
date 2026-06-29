@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Preview import · Colony Manager{% endblock %}
+
+{% block content %}
+<h1>Preview import</h1>
+<p class="muted">From <strong>{{ filename }}</strong>. Choose which sheets to
+import, then confirm. Nothing is saved until you click the button at the bottom.</p>
+
+<form method="post" action="{{ url_for('main.import_confirm') }}">
+  <input type="hidden" name="token" value="{{ token }}">
+
+  {% if preview.colony_sheets %}
+  <h2>Colony sheets found</h2>
+  <table>
+    <thead>
+      <tr><th>Import?</th><th>Sheet</th><th>Will become colony</th><th>Mice</th><th>Cages</th><th>Sample</th></tr>
+    </thead>
+    <tbody>
+      {% for s in preview.colony_sheets %}
+      <tr>
+        <td><input type="checkbox" name="sheets" value="{{ s.sheet_name }}" checked></td>
+        <td>{{ s.sheet_name }}</td>
+        <td>{{ s.colony_name }}</td>
+        <td>{{ s.mouse_count }}</td>
+        <td>{{ s.cage_labels | length }}</td>
+        <td class="muted">
+          {% for m in s.mice[:3] %}
+            #{{ m.tag }} {{ m.sex }} {{ m.genotype }}{% if not loop.last %}; {% endif %}
+          {% endfor %}{% if s.mouse_count > 3 %} …{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No colony sheets were recognized in this file.</div>
+  {% endif %}
+
+  {% if preview.skipped_sheets %}
+  <h2>Skipped tabs</h2>
+  <table>
+    <thead><tr><th>Sheet</th><th>Why skipped</th></tr></thead>
+    <tbody>
+      {% for s in preview.skipped_sheets %}
+      <tr><td>{{ s.sheet_name }}</td><td class="muted">{{ s.skip_reason }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  {% if preview.colony_sheets %}
+  <div class="form-actions" style="margin-top:1.5rem;">
+    <button class="btn" type="submit">✓ Import selected sheets</button>
+    <a class="btn btn-light" href="{{ url_for('main.import_form') }}">Cancel</a>
+  </div>
+  {% endif %}
+</form>
+{% endblock %}
