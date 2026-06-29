@@ -49,7 +49,24 @@ import, then confirm. Nothing is saved until you click the button at the bottom.
   {% endif %}
 
   {% if preview.colony_sheets %}
-  <div class="form-actions" style="margin-top:1.5rem;">
+  <div class="card" style="margin-top:1.5rem;">
+    <label style="font-weight:600;">
+      <input type="checkbox" name="combine" id="combine">
+      Combine all selected sheets into one colony
+    </label>
+    <p class="hint muted" style="margin:0.3rem 0 0.6rem;">
+      Leave unchecked to make each sheet its own colony. Check this to merge
+      them (e.g. put every tab from this file into a single colony). The
+      original tab name is saved in each mouse's notes.
+    </p>
+    <div class="field">
+      <label for="combined_name">Combined colony name</label>
+      <input id="combined_name" name="combined_name"
+             value="{{ filename.rsplit('.', 1)[0] }}">
+    </div>
+  </div>
+
+  <div class="form-actions" style="margin-top:1rem;">
     <button class="btn" type="submit">✓ Import selected sheets</button>
     <a class="btn btn-light" href="{{ url_for('main.import_form') }}">Cancel</a>
   </div>
