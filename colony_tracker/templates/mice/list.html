@@ -4,7 +4,10 @@
 {% block content %}
 <div class="page-head">
   <h1>Mice</h1>
-  <a class="btn" href="{{ url_for('main.mouse_new') }}">+ Add mouse</a>
+  <div class="form-actions">
+    <a class="btn btn-light" href="{{ url_for('main.export_mice', colony=colony_id) if colony_id else url_for('main.export_mice') }}">⬇ Export to Excel</a>
+    <a class="btn" href="{{ url_for('main.mouse_new') }}">+ Add mouse</a>
+  </div>
 </div>
 
 <form class="filterbar" method="get">

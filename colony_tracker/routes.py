@@ -15,10 +15,12 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_file,
     url_for,
 )
 
 from . import db
+from .export import build_mice_workbook
 from .models import Cage, Colony, Litter, Mating, Mouse
 
 bp = Blueprint("main", __name__)
@@ -217,7 +219,35 @@ def _save_mouse_from_form(mouse):
     mouse.date_of_death = parse_date(request.form.get("date_of_death"))
     mouse.sire_id = parse_int(request.form.get("sire_id"), None) or None
     mouse.dam_id = parse_int(request.form.get("dam_id"), None) or None
+    mouse.ear_tags = request.form.get("ear_tags", "").strip()
+    mouse.breeder_pair = request.form.get("breeder_pair", "").strip()
+    mouse.parent_pair = request.form.get("parent_pair", "").strip()
+    mouse.use = request.form.get("use", "").strip()
+    mouse.link = request.form.get("link", "").strip()
     mouse.notes = request.form.get("notes", "").strip()
+
+
+@bp.route("/export/mice.xlsx")
+def export_mice():
+    """Download a formatted Excel spreadsheet of mice (optionally one colony)."""
+    query = Mouse.query
+    title = "Colony"
+    colony_id = request.args.get("colony", type=int)
+    if colony_id:
+        query = query.filter_by(colony_id=colony_id)
+        colony = db.session.get(Colony, colony_id)
+        if colony:
+            title = colony.name
+    workbook = build_mice_workbook(query.all(), sheet_title=title)
+    return send_file(
+        workbook,
+        as_attachment=True,
+        download_name="colony_export.xlsx",
+        mimetype=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+    )
 
 
 # --------------------------------------------------------------------------

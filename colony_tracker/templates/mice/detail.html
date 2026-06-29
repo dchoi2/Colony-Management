@@ -27,6 +27,11 @@
     <dt>Cage</dt><dd>{% if mouse.cage %}<a href="{{ url_for('main.cage_detail', cage_id=mouse.cage.id) }}">{{ mouse.cage.label }}</a>{% else %}—{% endif %}</dd>
     <dt>Sire (father)</dt><dd>{% if mouse.sire %}<a href="{{ url_for('main.mouse_detail', mouse_id=mouse.sire.id) }}">{{ mouse.sire.tag }}</a>{% else %}—{% endif %}</dd>
     <dt>Dam (mother)</dt><dd>{% if mouse.dam %}<a href="{{ url_for('main.mouse_detail', mouse_id=mouse.dam.id) }}">{{ mouse.dam.tag }}</a>{% else %}—{% endif %}</dd>
+    {% if mouse.ear_tags %}<dt>Ear tags</dt><dd>{{ mouse.ear_tags }}</dd>{% endif %}
+    {% if mouse.breeder_pair %}<dt>Breeder pair #</dt><dd>{{ mouse.breeder_pair }}</dd>{% endif %}
+    {% if mouse.parent_pair %}<dt>Parent pair</dt><dd>{{ mouse.parent_pair }}</dd>{% endif %}
+    {% if mouse.use %}<dt>Use</dt><dd>{{ mouse.use }}</dd>{% endif %}
+    {% if mouse.link %}<dt>Link</dt><dd>{{ mouse.link }}</dd>{% endif %}
     {% if mouse.notes %}<dt>Notes</dt><dd>{{ mouse.notes }}</dd>{% endif %}
   </dl>
 </div>

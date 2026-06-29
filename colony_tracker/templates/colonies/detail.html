@@ -24,7 +24,10 @@
 
 <div class="page-head" style="margin-top:2rem;">
   <h2 style="margin:0;">Mice in this colony</h2>
-  <a class="btn btn-sm" href="{{ url_for('main.mouse_list', colony=colony.id) }}">View all mice</a>
+  <div class="form-actions">
+    <a class="btn btn-light btn-sm" href="{{ url_for('main.export_mice', colony=colony.id) }}">⬇ Export to Excel</a>
+    <a class="btn btn-sm" href="{{ url_for('main.mouse_list', colony=colony.id) }}">View all mice</a>
+  </div>
 </div>
 
 {% if colony.mice %}

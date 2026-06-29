@@ -13,6 +13,35 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 
+def _ensure_columns(engine):
+    """Add newly-introduced optional columns to an existing database.
+
+    SQLAlchemy's create_all() only creates missing *tables*, not missing
+    *columns*. When we add a new field to an existing app, this quietly adds
+    the column to the database so upgrading never requires deleting data.
+    """
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(engine)
+    if "mouse" not in inspector.get_table_names():
+        return
+    existing = {col["name"] for col in inspector.get_columns("mouse")}
+    new_columns = {
+        "ear_tags": "VARCHAR(40)",
+        "breeder_pair": "VARCHAR(60)",
+        "parent_pair": "VARCHAR(120)",
+        "use": "VARCHAR(200)",
+        "link": "VARCHAR(300)",
+    }
+    with engine.begin() as conn:
+        for name, coltype in new_columns.items():
+            if name not in existing:
+                conn.execute(
+                    text(f'ALTER TABLE mouse ADD COLUMN "{name}" {coltype} '
+                         f"DEFAULT ''")
+                )
+
+
 def _normalize_db_url(url):
     """Make a hosting provider's database URL work with SQLAlchemy.
 
@@ -56,6 +85,7 @@ def create_app(database_uri=None):
 
     with app.app_context():
         db.create_all()
+        _ensure_columns(db.engine)
 
     # Register all the page routes.
     from .routes import bp as main_bp
