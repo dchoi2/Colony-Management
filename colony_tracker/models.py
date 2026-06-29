@@ -19,6 +19,30 @@ from datetime import date, datetime
 
 from . import db
 
+# The standard ear-tag markers, in the order they are assigned within a cage.
+EAR_TAG_SEQUENCE = ["rt", "lt", "both", "2x rt", "2x lt"]
+
+
+def normalize_ear_tag(value):
+    """Turn common ways of writing an ear tag into one canonical form.
+
+    e.g. 'Right' -> 'rt', 'double lt' -> '2x lt'. Unknown values are passed
+    through unchanged so nothing is ever lost.
+    """
+    if not value:
+        return ""
+    text = " ".join(str(value).strip().lower().replace("double", "2x").split())
+    aliases = {
+        "r": "rt", "right": "rt", "rt": "rt",
+        "l": "lt", "left": "lt", "lt": "lt",
+        "both": "both", "rt+lt": "both", "rt lt": "both", "rtlt": "both",
+        "2x rt": "2x rt", "2xrt": "2x rt", "2 rt": "2x rt", "2rt": "2x rt",
+        "2x right": "2x rt", "2x r": "2x rt",
+        "2x lt": "2x lt", "2xlt": "2x lt", "2 lt": "2x lt", "2lt": "2x lt",
+        "2x left": "2x lt", "2x l": "2x lt",
+    }
+    return aliases.get(text, text)
+
 
 class Colony(db.Model):
     """A colony: the top-level grouping of animals (e.g. a lab or project)."""
@@ -61,6 +85,24 @@ class Cage(db.Model):
     @property
     def occupant_count(self):
         return len([m for m in self.mice if m.status == "alive"])
+
+    @property
+    def used_ear_tags(self):
+        """Ear-tag markers already taken by living mice in this cage."""
+        return {
+            normalize_ear_tag(m.ear_tags)
+            for m in self.mice
+            if m.status == "alive" and m.ear_tags
+        }
+
+    @property
+    def next_ear_tag(self):
+        """The next free marker in the standard sequence, or '' if all used."""
+        used = self.used_ear_tags
+        for tag in EAR_TAG_SEQUENCE:
+            if tag not in used:
+                return tag
+        return ""
 
 
 class Mouse(db.Model):

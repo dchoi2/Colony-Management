@@ -25,7 +25,15 @@ from flask import (
 from . import db
 from .export import build_mice_workbook
 from .importer import import_preview, parse_workbook
-from .models import Cage, Colony, Litter, Mating, Mouse
+from .models import (
+    EAR_TAG_SEQUENCE,
+    Cage,
+    Colony,
+    Litter,
+    Mating,
+    Mouse,
+    normalize_ear_tag,
+)
 
 bp = Blueprint("main", __name__)
 
@@ -161,13 +169,18 @@ def mouse_list():
     )
 
 
-def _mouse_form_context(mouse=None):
+def _mouse_form_context(mouse=None, prefill=None):
     """Shared data the add/edit mouse form needs (dropdown choices)."""
+    cages = Cage.query.order_by(Cage.label).all()
     return {
         "mouse": mouse,
+        "prefill": prefill or {},
         "colonies": Colony.query.order_by(Colony.name).all(),
-        "cages": Cage.query.order_by(Cage.label).all(),
+        "cages": cages,
         "all_mice": Mouse.query.order_by(Mouse.tag).all(),
+        "ear_tag_options": EAR_TAG_SEQUENCE,
+        # Suggested next marker per cage, for the live hint on the form.
+        "cage_next_tags": {c.id: c.next_ear_tag for c in cages},
     }
 
 
@@ -180,7 +193,19 @@ def mouse_new():
         db.session.commit()
         flash(f"Mouse “{mouse.tag}” added.", "success")
         return redirect(url_for("main.mouse_detail", mouse_id=mouse.id))
-    return render_template("mice/form.html", **_mouse_form_context())
+
+    # Adding into a specific cage? Prefill its colony and suggest the next tag.
+    prefill = {}
+    cage_id = request.args.get("cage", type=int)
+    if cage_id:
+        cage = db.session.get(Cage, cage_id)
+        if cage:
+            prefill = {
+                "cage_id": cage.id,
+                "colony_id": cage.colony_id,
+                "ear_tags": cage.next_ear_tag,
+            }
+    return render_template("mice/form.html", **_mouse_form_context(prefill=prefill))
 
 
 @bp.route("/mice/<int:mouse_id>")
@@ -223,7 +248,7 @@ def _save_mouse_from_form(mouse):
     mouse.date_of_death = parse_date(request.form.get("date_of_death"))
     mouse.sire_id = parse_int(request.form.get("sire_id"), None) or None
     mouse.dam_id = parse_int(request.form.get("dam_id"), None) or None
-    mouse.ear_tags = request.form.get("ear_tags", "").strip()
+    mouse.ear_tags = normalize_ear_tag(request.form.get("ear_tags", ""))
     mouse.breeder_pair = request.form.get("breeder_pair", "").strip()
     mouse.parent_pair = request.form.get("parent_pair", "").strip()
     mouse.use = request.form.get("use", "").strip()
