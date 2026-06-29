@@ -12,3 +12,6 @@ colony.db
 .vscode/
 .idea/
 .DS_Store
+
+# Flask instance folder (uploaded import files, etc.)
+instance/

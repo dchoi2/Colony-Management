@@ -7,10 +7,13 @@ and show a confirmation message.
 The code is intentionally written in a plain, repetitive style so that it
 is easy to read and adjust even if you are not an experienced programmer.
 """
+import os
+import uuid
 from datetime import datetime
 
 from flask import (
     Blueprint,
+    current_app,
     flash,
     redirect,
     render_template,
@@ -21,6 +24,7 @@ from flask import (
 
 from . import db
 from .export import build_mice_workbook
+from .importer import import_preview, parse_workbook
 from .models import Cage, Colony, Litter, Mating, Mouse
 
 bp = Blueprint("main", __name__)
@@ -225,6 +229,76 @@ def _save_mouse_from_form(mouse):
     mouse.use = request.form.get("use", "").strip()
     mouse.link = request.form.get("link", "").strip()
     mouse.notes = request.form.get("notes", "").strip()
+
+
+# --------------------------------------------------------------------------
+# Import from Excel
+# --------------------------------------------------------------------------
+def _imports_dir():
+    path = os.path.join(current_app.instance_path, "imports")
+    os.makedirs(path, exist_ok=True)
+    return path
+
+
+@bp.route("/import")
+def import_form():
+    return render_template("import/form.html")
+
+
+@bp.route("/import/preview", methods=["POST"])
+def import_preview_page():
+    file = request.files.get("file")
+    if not file or not file.filename:
+        flash("Please choose a spreadsheet file to import.", "error")
+        return redirect(url_for("main.import_form"))
+    if not file.filename.lower().endswith(".xlsx"):
+        flash("Please upload an Excel .xlsx file.", "error")
+        return redirect(url_for("main.import_form"))
+
+    # Save to a temporary token file so the confirm step can re-read it.
+    token = uuid.uuid4().hex
+    saved_path = os.path.join(_imports_dir(), f"{token}.xlsx")
+    file.save(saved_path)
+
+    try:
+        preview = parse_workbook(saved_path)
+    except Exception as exc:  # noqa: BLE001 - show any read error to the user
+        os.remove(saved_path)
+        flash(f"Sorry, that file could not be read: {exc}", "error")
+        return redirect(url_for("main.import_form"))
+
+    return render_template(
+        "import/preview.html",
+        preview=preview,
+        token=token,
+        filename=file.filename,
+    )
+
+
+@bp.route("/import/confirm", methods=["POST"])
+def import_confirm():
+    token = request.form.get("token", "")
+    selected = request.form.getlist("sheets")
+    # Only allow our own generated token filenames (hex), never a path.
+    if not token.isalnum():
+        flash("That import session expired. Please upload the file again.", "error")
+        return redirect(url_for("main.import_form"))
+    saved_path = os.path.join(_imports_dir(), f"{token}.xlsx")
+    if not os.path.exists(saved_path):
+        flash("That import session expired. Please upload the file again.", "error")
+        return redirect(url_for("main.import_form"))
+
+    if not selected:
+        flash("No sheets were selected, so nothing was imported.", "error")
+        return redirect(url_for("main.import_form"))
+
+    preview = parse_workbook(saved_path)
+    summaries = import_preview(preview, selected)
+    os.remove(saved_path)
+
+    total = sum(s["mice"] for s in summaries)
+    flash(f"Imported {total} mice into {len(summaries)} colony(ies).", "success")
+    return render_template("import/result.html", summaries=summaries)
 
 
 @bp.route("/export/mice.xlsx")

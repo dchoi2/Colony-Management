@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Import from Excel · Colony Manager{% endblock %}
+
+{% block content %}
+<h1>Import from Excel</h1>
+
+<div class="card">
+  <p>Upload an existing colony spreadsheet (<code>.xlsx</code>) and the app will
+  read the mice from it. You'll see a <strong>preview</strong> first and can
+  choose which sheets to bring in — nothing is saved until you confirm.</p>
+
+  <p class="muted">It recognizes the usual columns automatically, in any order:
+  cage, number, sex, dob, dod, geno, tags, breeder pair, parent pair,
+  generation, use, link, and notes. Tabs that aren't colonies (e.g. behavior
+  or locomotor data) are skipped.</p>
+
+  <form method="post" action="{{ url_for('main.import_preview_page') }}"
+        enctype="multipart/form-data" class="stack">
+    <div class="field">
+      <label for="file">Choose a .xlsx file</label>
+      <input id="file" name="file" type="file" accept=".xlsx" required>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">Preview import →</button>
+    </div>
+  </form>
+</div>
+
+<p class="muted">Tip: each colony tab becomes its own colony in the app. If a
+result ever looks off, you can simply open that colony and delete it to redo.</p>
+{% endblock %}

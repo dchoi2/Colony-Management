@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Import complete · Colony Manager{% endblock %}
+
+{% block content %}
+<h1>Import complete 🎉</h1>
+
+{% if summaries %}
+<table>
+  <thead><tr><th>Colony created</th><th>Mice</th><th>Cages</th><th></th></tr></thead>
+  <tbody>
+    {% for s in summaries %}
+    <tr>
+      <td>{{ s.colony_name }}</td>
+      <td>{{ s.mice }}</td>
+      <td>{{ s.cages }}</td>
+      <td><a class="btn btn-light btn-sm" href="{{ url_for('main.colony_detail', colony_id=s.colony_id) }}">Open</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">Nothing was imported.</div>
+{% endif %}
+
+<p style="margin-top:1.5rem;">
+  <a class="btn" href="{{ url_for('main.mouse_list') }}">View all mice</a>
+  <a class="btn btn-light" href="{{ url_for('main.import_form') }}">Import another file</a>
+</p>
+
+<p class="muted">If a colony doesn't look right, open it and use Delete to remove
+it (that also removes its mice and cages), then re-import.</p>
+{% endblock %}
