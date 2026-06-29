@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if colony else "New" }} colony · Colony Manager{% endblock %}
+
+{% block content %}
+<h1>{{ "Edit colony" if colony else "New colony" }}</h1>
+
+<form class="stack card" method="post">
+  <div class="field">
+    <label for="name">Colony name</label>
+    <input id="name" name="name" required value="{{ colony.name if colony else '' }}"
+           placeholder="e.g. Smith Lab — Cre Line">
+  </div>
+  <div class="field">
+    <label for="description">Description</label>
+    <textarea id="description" name="description"
+              placeholder="What is this colony for?">{{ colony.description if colony else '' }}</textarea>
+  </div>
+  <div class="form-actions">
+    <button class="btn" type="submit">Save</button>
+    <a class="btn btn-light" href="{{ url_for('main.colony_list') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

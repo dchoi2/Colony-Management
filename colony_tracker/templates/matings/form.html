@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if mating else "New" }} mating · Colony Manager{% endblock %}
+
+{% block content %}
+<h1>{{ "Edit mating" if mating else "New mating" }}</h1>
+
+<form class="stack card" method="post">
+  <div class="field">
+    <label for="colony_id">Colony *</label>
+    <select id="colony_id" name="colony_id" required>
+      <option value="">— choose —</option>
+      {% for c in colonies %}
+        <option value="{{ c.id }}" {{ 'selected' if mating and mating.colony_id == c.id }}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="sire_id">Sire (male)</label>
+      <select id="sire_id" name="sire_id">
+        <option value="">— choose —</option>
+        {% for m in males %}
+          <option value="{{ m.id }}" {{ 'selected' if mating and mating.sire_id == m.id }}>{{ m.tag }}{% if m.name %} ({{ m.name }}){% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="dam_id">Dam (female)</label>
+      <select id="dam_id" name="dam_id">
+        <option value="">— choose —</option>
+        {% for f in females %}
+          <option value="{{ f.id }}" {{ 'selected' if mating and mating.dam_id == f.id }}>{{ f.tag }}{% if f.name %} ({{ f.name }}){% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="cage_id">Cage</label>
+      <select id="cage_id" name="cage_id">
+        <option value="">— none —</option>
+        {% for cg in cages %}
+          <option value="{{ cg.id }}" {{ 'selected' if mating and mating.cage_id == cg.id }}>{{ cg.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="set_up_date">Set-up date</label>
+      <input id="set_up_date" name="set_up_date" type="date"
+             value="{{ mating.set_up_date.isoformat() if mating and mating.set_up_date else '' }}">
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option value="active" {{ 'selected' if mating and mating.status == 'active' }}>active</option>
+      <option value="ended" {{ 'selected' if mating and mating.status == 'ended' }}>ended</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="notes">Notes</label>
+    <textarea id="notes" name="notes">{{ mating.notes if mating else '' }}</textarea>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn" type="submit">Save</button>
+    <a class="btn btn-light" href="{{ url_for('main.mating_list') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if cage else "Add" }} cage · Colony Manager{% endblock %}
+
+{% block content %}
+<h1>{{ "Edit cage" if cage else "Add cage" }}</h1>
+
+<form class="stack card" method="post">
+  <div class="field-row">
+    <div class="field">
+      <label for="label">Cage label *</label>
+      <input id="label" name="label" required value="{{ cage.label if cage else '' }}" placeholder="e.g. C-101">
+    </div>
+    <div class="field">
+      <label for="colony_id">Colony *</label>
+      <select id="colony_id" name="colony_id" required>
+        <option value="">— choose —</option>
+        {% for c in colonies %}
+          <option value="{{ c.id }}" {{ 'selected' if cage and cage.colony_id == c.id }}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="location">Location</label>
+      <input id="location" name="location" value="{{ cage.location if cage else '' }}" placeholder="Room / rack / shelf">
+    </div>
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        <option value="active" {{ 'selected' if cage and cage.status == 'active' }}>active</option>
+        <option value="retired" {{ 'selected' if cage and cage.status == 'retired' }}>retired</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="notes">Notes</label>
+    <textarea id="notes" name="notes">{{ cage.notes if cage else '' }}</textarea>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn" type="submit">Save</button>
+    <a class="btn btn-light" href="{{ url_for('main.cage_list') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Mice · Colony Manager{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Mice</h1>
+  <a class="btn" href="{{ url_for('main.mouse_new') }}">+ Add mouse</a>
+</div>
+
+<form class="filterbar" method="get">
+  <div class="field">
+    <label>Search</label>
+    <input name="q" value="{{ search }}" placeholder="tag, name, genotype…">
+  </div>
+  <div class="field">
+    <label>Colony</label>
+    <select name="colony">
+      <option value="">All</option>
+      {% for c in colonies %}
+        <option value="{{ c.id }}" {{ 'selected' if colony_id == c.id }}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="field">
+    <label>Status</label>
+    <select name="status">
+      <option value="">All</option>
+      {% for s in ['alive', 'weaned', 'dead', 'sacrificed'] %}
+        <option value="{{ s }}" {{ 'selected' if status == s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn-light" type="submit">Filter</button>
+</form>
+
+{% if mice %}
+<table>
+  <thead>
+    <tr><th>Tag</th><th>Name</th><th>Sex</th><th>Strain</th><th>Genotype</th><th>Age</th><th>Cage</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for m in mice %}
+    <tr>
+      <td><a href="{{ url_for('main.mouse_detail', mouse_id=m.id) }}">{{ m.tag }}</a></td>
+      <td>{{ m.name or "—" }}</td>
+      <td class="sex-{{ m.sex }}">{{ m.sex_display }}</td>
+      <td>{{ m.strain or "—" }}</td>
+      <td>{{ m.genotype or "—" }}</td>
+      <td>{{ m.age_display }}</td>
+      <td>{% if m.cage %}<a href="{{ url_for('main.cage_detail', cage_id=m.cage.id) }}">{{ m.cage.label }}</a>{% else %}—{% endif %}</td>
+      <td><span class="badge badge-{{ 'alive' if m.status == 'alive' else 'other' }}">{{ m.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No mice match. <a href="{{ url_for('main.mouse_new') }}">Add a mouse</a>.</div>
+{% endif %}
+{% endblock %}

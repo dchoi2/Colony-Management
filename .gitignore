@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Local database (each user keeps their own)
+colony.db
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ mouse.tag }} · Colony Manager{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Mouse {{ mouse.tag }}{% if mouse.name %} · {{ mouse.name }}{% endif %}</h1>
+  <div class="form-actions">
+    <a class="btn btn-light" href="{{ url_for('main.mouse_edit', mouse_id=mouse.id) }}">Edit</a>
+    <form class="inline-form" method="post"
+          action="{{ url_for('main.mouse_delete', mouse_id=mouse.id) }}"
+          onsubmit="return confirm('Delete this mouse?');">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <dl class="details">
+    <dt>Colony</dt><dd><a href="{{ url_for('main.colony_detail', colony_id=mouse.colony.id) }}">{{ mouse.colony.name }}</a></dd>
+    <dt>Sex</dt><dd class="sex-{{ mouse.sex }}">{{ mouse.sex_display }}</dd>
+    <dt>Date of birth</dt><dd>{{ mouse.dob.isoformat() if mouse.dob else "—" }}</dd>
+    <dt>Age</dt><dd>{{ mouse.age_display }}</dd>
+    <dt>Strain</dt><dd>{{ mouse.strain or "—" }}</dd>
+    <dt>Genotype</dt><dd>{{ mouse.genotype or "—" }}</dd>
+    <dt>Status</dt><dd><span class="badge badge-{{ 'alive' if mouse.status == 'alive' else 'other' }}">{{ mouse.status }}</span></dd>
+    {% if mouse.date_of_death %}<dt>Date of death</dt><dd>{{ mouse.date_of_death.isoformat() }}</dd>{% endif %}
+    <dt>Cage</dt><dd>{% if mouse.cage %}<a href="{{ url_for('main.cage_detail', cage_id=mouse.cage.id) }}">{{ mouse.cage.label }}</a>{% else %}—{% endif %}</dd>
+    <dt>Sire (father)</dt><dd>{% if mouse.sire %}<a href="{{ url_for('main.mouse_detail', mouse_id=mouse.sire.id) }}">{{ mouse.sire.tag }}</a>{% else %}—{% endif %}</dd>
+    <dt>Dam (mother)</dt><dd>{% if mouse.dam %}<a href="{{ url_for('main.mouse_detail', mouse_id=mouse.dam.id) }}">{{ mouse.dam.tag }}</a>{% else %}—{% endif %}</dd>
+    {% if mouse.notes %}<dt>Notes</dt><dd>{{ mouse.notes }}</dd>{% endif %}
+  </dl>
+</div>
+
+{% set children = mouse.sired + mouse.bore %}
+{% if children %}
+<h2>Offspring</h2>
+<table>
+  <thead><tr><th>Tag</th><th>Sex</th><th>Genotype</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for child in children %}
+    <tr>
+      <td><a href="{{ url_for('main.mouse_detail', mouse_id=child.id) }}">{{ child.tag }}</a></td>
+      <td class="sex-{{ child.sex }}">{{ child.sex_display }}</td>
+      <td>{{ child.genotype or "—" }}</td>
+      <td><span class="badge badge-{{ 'alive' if child.status == 'alive' else 'other' }}">{{ child.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+<p style="margin-top:1.5rem;"><a href="{{ url_for('main.mouse_list') }}">← Back to all mice</a></p>
+{% endblock %}

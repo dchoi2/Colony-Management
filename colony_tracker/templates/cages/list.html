@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Cages · Colony Manager{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Cages</h1>
+  <a class="btn" href="{{ url_for('main.cage_new') }}">+ Add cage</a>
+</div>
+
+<form class="filterbar" method="get">
+  <div class="field">
+    <label>Colony</label>
+    <select name="colony">
+      <option value="">All</option>
+      {% for c in colonies %}
+        <option value="{{ c.id }}" {{ 'selected' if colony_id == c.id }}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn-light" type="submit">Filter</button>
+</form>
+
+{% if cages %}
+<table>
+  <thead><tr><th>Label</th><th>Colony</th><th>Location</th><th>Occupants</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for cg in cages %}
+    <tr>
+      <td><a href="{{ url_for('main.cage_detail', cage_id=cg.id) }}">{{ cg.label }}</a></td>
+      <td>{{ cg.colony.name }}</td>
+      <td>{{ cg.location or "—" }}</td>
+      <td>{{ cg.occupant_count }}</td>
+      <td><span class="badge badge-{{ 'active' if cg.status == 'active' else 'other' }}">{{ cg.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No cages yet. <a href="{{ url_for('main.cage_new') }}">Add a cage</a>.</div>
+{% endif %}
+{% endblock %}
