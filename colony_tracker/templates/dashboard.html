@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Colony Manager{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="stats">
+  <div class="stat-card">
+    <div class="num">{{ stats.colonies }}</div>
+    <div class="label">Colonies</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ stats.mice_alive }}</div>
+    <div class="label">Living mice</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ stats.cages }}</div>
+    <div class="label">Active cages</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ stats.matings }}</div>
+    <div class="label">Active matings</div>
+  </div>
+</div>
+
+<div class="page-head" style="margin-top:2rem;">
+  <h2 style="margin:0;">Your colonies</h2>
+  <a class="btn" href="{{ url_for('main.colony_new') }}">+ New colony</a>
+</div>
+
+{% if colonies %}
+<table>
+  <thead>
+    <tr><th>Name</th><th>Living mice</th><th>Cages</th><th>Matings</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for c in colonies %}
+    <tr>
+      <td><a href="{{ url_for('main.colony_detail', colony_id=c.id) }}">{{ c.name }}</a></td>
+      <td>{{ c.living_mice | length }}</td>
+      <td>{{ c.cages | length }}</td>
+      <td>{{ c.matings | length }}</td>
+      <td><a class="btn btn-light btn-sm" href="{{ url_for('main.colony_detail', colony_id=c.id) }}">Open</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">
+  No colonies yet. <a href="{{ url_for('main.colony_new') }}">Create your first colony</a> to get started.
+</div>
+{% endif %}
+{% endblock %}

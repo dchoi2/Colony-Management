@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if mouse else "Add" }} mouse · Colony Manager{% endblock %}
+
+{% block content %}
+<h1>{{ "Edit mouse" if mouse else "Add mouse" }}</h1>
+
+<form class="stack card" method="post">
+  <div class="field-row">
+    <div class="field">
+      <label for="tag">Ear tag / animal ID *</label>
+      <input id="tag" name="tag" required value="{{ mouse.tag if mouse else '' }}" placeholder="e.g. 1042">
+    </div>
+    <div class="field">
+      <label for="name">Name (optional)</label>
+      <input id="name" name="name" value="{{ mouse.name if mouse else '' }}">
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="colony_id">Colony *</label>
+      <select id="colony_id" name="colony_id" required>
+        <option value="">— choose —</option>
+        {% for c in colonies %}
+          <option value="{{ c.id }}" {{ 'selected' if mouse and mouse.colony_id == c.id }}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="cage_id">Cage</label>
+      <select id="cage_id" name="cage_id">
+        <option value="">— none —</option>
+        {% for cg in cages %}
+          <option value="{{ cg.id }}" {{ 'selected' if mouse and mouse.cage_id == cg.id }}>{{ cg.label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="sex">Sex</label>
+      <select id="sex" name="sex">
+        <option value="U" {{ 'selected' if mouse and mouse.sex == 'U' }}>Unknown</option>
+        <option value="M" {{ 'selected' if mouse and mouse.sex == 'M' }}>Male</option>
+        <option value="F" {{ 'selected' if mouse and mouse.sex == 'F' }}>Female</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="dob">Date of birth</label>
+      <input id="dob" name="dob" type="date" value="{{ mouse.dob.isoformat() if mouse and mouse.dob else '' }}">
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="strain">Strain / background</label>
+      <input id="strain" name="strain" value="{{ mouse.strain if mouse else '' }}" placeholder="e.g. C57BL/6J">
+    </div>
+    <div class="field">
+      <label for="genotype">Genotype</label>
+      <input id="genotype" name="genotype" value="{{ mouse.genotype if mouse else '' }}" placeholder="e.g. Cre+/-">
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="status">Status</label>
+      <select id="status" name="status">
+        {% for s in ['alive', 'weaned', 'dead', 'sacrificed'] %}
+          <option value="{{ s }}" {{ 'selected' if mouse and mouse.status == s }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="date_of_death">Date of death (if any)</label>
+      <input id="date_of_death" name="date_of_death" type="date"
+             value="{{ mouse.date_of_death.isoformat() if mouse and mouse.date_of_death else '' }}">
+    </div>
+  </div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="sire_id">Sire (father)</label>
+      <select id="sire_id" name="sire_id">
+        <option value="">— unknown —</option>
+        {% for p in all_mice %}
+          {% if not mouse or p.id != mouse.id %}
+          <option value="{{ p.id }}" {{ 'selected' if mouse and mouse.sire_id == p.id }}>{{ p.tag }}{% if p.name %} ({{ p.name }}){% endif %}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label for="dam_id">Dam (mother)</label>
+      <select id="dam_id" name="dam_id">
+        <option value="">— unknown —</option>
+        {% for p in all_mice %}
+          {% if not mouse or p.id != mouse.id %}
+          <option value="{{ p.id }}" {{ 'selected' if mouse and mouse.dam_id == p.id }}>{{ p.tag }}{% if p.name %} ({{ p.name }}){% endif %}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="notes">Notes</label>
+    <textarea id="notes" name="notes">{{ mouse.notes if mouse else '' }}</textarea>
+  </div>
+
+  <div class="form-actions">
+    <button class="btn" type="submit">Save</button>
+    <a class="btn btn-light" href="{{ url_for('main.mouse_list') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Matings · Colony Manager{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Matings</h1>
+  <a class="btn" href="{{ url_for('main.mating_new') }}">+ New mating</a>
+</div>
+
+<form class="filterbar" method="get">
+  <div class="field">
+    <label>Colony</label>
+    <select name="colony">
+      <option value="">All</option>
+      {% for c in colonies %}
+        <option value="{{ c.id }}" {{ 'selected' if colony_id == c.id }}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn btn-light" type="submit">Filter</button>
+</form>
+
+{% if matings %}
+<table>
+  <thead><tr><th>Sire</th><th>Dam</th><th>Cage</th><th>Set up</th><th>Litters</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for mt in matings %}
+    <tr>
+      <td><a href="{{ url_for('main.mating_detail', mating_id=mt.id) }}">{{ mt.sire.tag if mt.sire else "—" }}</a></td>
+      <td>{{ mt.dam.tag if mt.dam else "—" }}</td>
+      <td>{{ mt.cage.label if mt.cage else "—" }}</td>
+      <td>{{ mt.set_up_date.isoformat() if mt.set_up_date else "—" }}</td>
+      <td>{{ mt.litters | length }}</td>
+      <td><span class="badge badge-{{ 'active' if mt.status == 'active' else 'other' }}">{{ mt.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No matings yet. <a href="{{ url_for('main.mating_new') }}">Create one</a>.</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Mating · Colony Manager{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Mating
+    {{ mating.sire.tag if mating.sire else "?" }} × {{ mating.dam.tag if mating.dam else "?" }}
+  </h1>
+  <div class="form-actions">
+    <a class="btn btn-light" href="{{ url_for('main.mating_edit', mating_id=mating.id) }}">Edit</a>
+    <form class="inline-form" method="post"
+          action="{{ url_for('main.mating_delete', mating_id=mating.id) }}"
+          onsubmit="return confirm('Delete this mating and its litters?');">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <dl class="details">
+    <dt>Colony</dt><dd><a href="{{ url_for('main.colony_detail', colony_id=mating.colony.id) }}">{{ mating.colony.name }}</a></dd>
+    <dt>Sire</dt><dd>{% if mating.sire %}<a href="{{ url_for('main.mouse_detail', mouse_id=mating.sire.id) }}">{{ mating.sire.tag }}</a>{% else %}—{% endif %}</dd>
+    <dt>Dam</dt><dd>{% if mating.dam %}<a href="{{ url_for('main.mouse_detail', mouse_id=mating.dam.id) }}">{{ mating.dam.tag }}</a>{% else %}—{% endif %}</dd>
+    <dt>Cage</dt><dd>{% if mating.cage %}<a href="{{ url_for('main.cage_detail', cage_id=mating.cage.id) }}">{{ mating.cage.label }}</a>{% else %}—{% endif %}</dd>
+    <dt>Set-up date</dt><dd>{{ mating.set_up_date.isoformat() if mating.set_up_date else "—" }}</dd>
+    <dt>Status</dt><dd><span class="badge badge-{{ 'active' if mating.status == 'active' else 'other' }}">{{ mating.status }}</span></dd>
+    {% if mating.notes %}<dt>Notes</dt><dd>{{ mating.notes }}</dd>{% endif %}
+  </dl>
+</div>
+
+<h2>Litters</h2>
+{% if mating.litters %}
+<table>
+  <thead><tr><th>Born</th><th>Pups</th><th>Weaned</th><th>Notes</th><th></th></tr></thead>
+  <tbody>
+    {% for lt in mating.litters %}
+    <tr>
+      <td>{{ lt.dob.isoformat() if lt.dob else "—" }}</td>
+      <td>{{ lt.num_pups }}</td>
+      <td>{{ lt.num_weaned }}</td>
+      <td class="muted">{{ lt.notes or "—" }}</td>
+      <td>
+        <form class="inline-form" method="post"
+              action="{{ url_for('main.litter_delete', litter_id=lt.id) }}"
+              onsubmit="return confirm('Delete this litter?');">
+          <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">No litters recorded yet.</p>
+{% endif %}
+
+<h2>Record a litter</h2>
+<form class="stack card" method="post" action="{{ url_for('main.litter_new', mating_id=mating.id) }}">
+  <div class="field-row">
+    <div class="field">
+      <label for="dob">Birth date</label>
+      <input id="dob" name="dob" type="date">
+    </div>
+    <div class="field">
+      <label for="num_pups">Number of pups</label>
+      <input id="num_pups" name="num_pups" type="number" min="0" value="0">
+    </div>
+  </div>
+  <div class="field-row">
+    <div class="field">
+      <label for="num_weaned">Number weaned</label>
+      <input id="num_weaned" name="num_weaned" type="number" min="0" value="0">
+    </div>
+    <div class="field">
+      <label for="notes">Notes</label>
+      <input id="notes" name="notes">
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn" type="submit">Add litter</button>
+  </div>
+</form>
+
+<p style="margin-top:1.5rem;"><a href="{{ url_for('main.mating_list') }}">← Back to all matings</a></p>
+{% endblock %}

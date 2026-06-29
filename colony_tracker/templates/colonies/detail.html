@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ colony.name }} · Colony Manager{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>{{ colony.name }}</h1>
+  <div class="form-actions">
+    <a class="btn btn-light" href="{{ url_for('main.colony_edit', colony_id=colony.id) }}">Edit</a>
+    <form class="inline-form" method="post"
+          action="{{ url_for('main.colony_delete', colony_id=colony.id) }}"
+          onsubmit="return confirm('Delete this colony and everything in it?');">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+  </div>
+</div>
+
+{% if colony.description %}<p class="muted">{{ colony.description }}</p>{% endif %}
+
+<div class="stats">
+  <div class="stat-card"><div class="num">{{ colony.living_mice | length }}</div><div class="label">Living mice</div></div>
+  <div class="stat-card"><div class="num">{{ colony.cages | length }}</div><div class="label">Cages</div></div>
+  <div class="stat-card"><div class="num">{{ colony.matings | length }}</div><div class="label">Matings</div></div>
+</div>
+
+<div class="page-head" style="margin-top:2rem;">
+  <h2 style="margin:0;">Mice in this colony</h2>
+  <a class="btn btn-sm" href="{{ url_for('main.mouse_list', colony=colony.id) }}">View all mice</a>
+</div>
+
+{% if colony.mice %}
+<table>
+  <thead><tr><th>Tag</th><th>Sex</th><th>Strain</th><th>Genotype</th><th>Age</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for m in colony.mice[:15] %}
+    <tr>
+      <td><a href="{{ url_for('main.mouse_detail', mouse_id=m.id) }}">{{ m.tag }}</a></td>
+      <td class="sex-{{ m.sex }}">{{ m.sex_display }}</td>
+      <td>{{ m.strain or "—" }}</td>
+      <td>{{ m.genotype or "—" }}</td>
+      <td>{{ m.age_display }}</td>
+      <td><span class="badge badge-{{ 'alive' if m.status == 'alive' else 'other' }}">{{ m.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">No mice yet. <a href="{{ url_for('main.mouse_new') }}">Add a mouse</a>.</div>
+{% endif %}
+{% endblock %}

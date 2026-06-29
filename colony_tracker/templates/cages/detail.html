@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Cage {{ cage.label }} · Colony Manager{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <h1>Cage {{ cage.label }}</h1>
+  <div class="form-actions">
+    <a class="btn btn-light" href="{{ url_for('main.cage_edit', cage_id=cage.id) }}">Edit</a>
+    <form class="inline-form" method="post"
+          action="{{ url_for('main.cage_delete', cage_id=cage.id) }}"
+          onsubmit="return confirm('Delete this cage? Mice in it will not be deleted.');">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <dl class="details">
+    <dt>Colony</dt><dd><a href="{{ url_for('main.colony_detail', colony_id=cage.colony.id) }}">{{ cage.colony.name }}</a></dd>
+    <dt>Location</dt><dd>{{ cage.location or "—" }}</dd>
+    <dt>Status</dt><dd><span class="badge badge-{{ 'active' if cage.status == 'active' else 'other' }}">{{ cage.status }}</span></dd>
+    {% if cage.notes %}<dt>Notes</dt><dd>{{ cage.notes }}</dd>{% endif %}
+  </dl>
+</div>
+
+<h2>Mice in this cage</h2>
+{% if cage.mice %}
+<table>
+  <thead><tr><th>Tag</th><th>Sex</th><th>Strain</th><th>Genotype</th><th>Status</th></tr></thead>
+  <tbody>
+    {% for m in cage.mice %}
+    <tr>
+      <td><a href="{{ url_for('main.mouse_detail', mouse_id=m.id) }}">{{ m.tag }}</a></td>
+      <td class="sex-{{ m.sex }}">{{ m.sex_display }}</td>
+      <td>{{ m.strain or "—" }}</td>
+      <td>{{ m.genotype or "—" }}</td>
+      <td><span class="badge badge-{{ 'alive' if m.status == 'alive' else 'other' }}">{{ m.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">This cage is empty.</div>
+{% endif %}
+
+<p style="margin-top:1.5rem;"><a href="{{ url_for('main.cage_list') }}">← Back to all cages</a></p>
+{% endblock %}
