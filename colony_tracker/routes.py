@@ -292,8 +292,13 @@ def import_confirm():
         flash("No sheets were selected, so nothing was imported.", "error")
         return redirect(url_for("main.import_form"))
 
+    combine = request.form.get("combine") == "on"
+    combined_name = request.form.get("combined_name", "").strip()
+
     preview = parse_workbook(saved_path)
-    summaries = import_preview(preview, selected)
+    summaries = import_preview(
+        preview, selected, combine=combine, combined_name=combined_name
+    )
     os.remove(saved_path)
 
     total = sum(s["mice"] for s in summaries)

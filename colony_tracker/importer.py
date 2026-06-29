@@ -207,49 +207,92 @@ def parse_workbook(path):
     return preview
 
 
-def import_preview(preview, selected_sheet_names):
-    """Write the chosen sheets to the database. Returns a list of summaries."""
+def _get_or_make_cage(colony_id, label, cages):
+    """Return the Cage for a label within a colony, creating it once."""
+    if not label:
+        return None
+    if label not in cages:
+        cage = Cage(colony_id=colony_id, label=label)
+        db.session.add(cage)
+        db.session.flush()
+        cages[label] = cage
+    return cages[label]
+
+
+def _add_mouse(colony_id, cages, m, source_sheet=None):
+    notes = m["notes"]
+    if source_sheet:
+        notes = (notes + " | " if notes else "") + f"Source: {source_sheet}"
+    cage = _get_or_make_cage(colony_id, m["cage_label"], cages)
+    db.session.add(Mouse(
+        colony_id=colony_id,
+        cage_id=cage.id if cage else None,
+        tag=m["tag"],
+        sex=m["sex"],
+        dob=m["dob"],
+        date_of_death=m["date_of_death"],
+        status=m["status"],
+        genotype=m["genotype"],
+        ear_tags=m["ear_tags"],
+        breeder_pair=m["breeder_pair"],
+        parent_pair=m["parent_pair"],
+        use=m["use"],
+        link=m["link"],
+        notes=notes,
+    ))
+
+
+def import_preview(preview, selected_sheet_names, combine=False,
+                   combined_name=None):
+    """Write the chosen sheets to the database. Returns a list of summaries.
+
+    If ``combine`` is True, every selected sheet is loaded into a *single*
+    colony named ``combined_name`` (the originating tab is recorded in each
+    mouse's notes). Otherwise each sheet becomes its own colony.
+    """
+    sheets = [s for s in preview.colony_sheets
+              if s.sheet_name in selected_sheet_names]
+    if not sheets:
+        return []
+
+    if combine:
+        colony = Colony(
+            name=combined_name or "Imported colony",
+            description="Imported from spreadsheet "
+                        f"({', '.join(s.sheet_name for s in sheets)}).",
+        )
+        db.session.add(colony)
+        db.session.flush()
+        cages = {}
+        multi = len(sheets) > 1
+        for sheet in sheets:
+            for m in sheet.mice:
+                _add_mouse(colony.id, cages,
+                           m, sheet.sheet_name if multi else None)
+        db.session.commit()
+        return [{
+            "colony_id": colony.id,
+            "colony_name": colony.name,
+            "mice": sum(s.mouse_count for s in sheets),
+            "cages": len(cages),
+        }]
+
     summaries = []
-    for sheet in preview.colony_sheets:
-        if sheet.sheet_name not in selected_sheet_names:
-            continue
+    for sheet in sheets:
         colony = Colony(
             name=sheet.colony_name or "Imported colony",
             description=f"Imported from spreadsheet sheet “{sheet.sheet_name}”.",
         )
         db.session.add(colony)
-        db.session.flush()  # get colony.id
-
-        cages = {}  # label -> Cage
-        for label in sorted(sheet.cage_labels):
-            cage = Cage(colony_id=colony.id, label=label)
-            db.session.add(cage)
-            cages[label] = cage
         db.session.flush()
-
+        cages = {}
         for m in sheet.mice:
-            cage = cages.get(m["cage_label"])
-            db.session.add(Mouse(
-                colony_id=colony.id,
-                cage_id=cage.id if cage else None,
-                tag=m["tag"],
-                sex=m["sex"],
-                dob=m["dob"],
-                date_of_death=m["date_of_death"],
-                status=m["status"],
-                genotype=m["genotype"],
-                ear_tags=m["ear_tags"],
-                breeder_pair=m["breeder_pair"],
-                parent_pair=m["parent_pair"],
-                use=m["use"],
-                link=m["link"],
-                notes=m["notes"],
-            ))
+            _add_mouse(colony.id, cages, m)
         summaries.append({
             "colony_id": colony.id,
             "colony_name": colony.name,
-            "mice": len(sheet.mice),
-            "cages": len(sheet.cage_labels),
+            "mice": sheet.mouse_count,
+            "cages": len(cages),
         })
     db.session.commit()
     return summaries
